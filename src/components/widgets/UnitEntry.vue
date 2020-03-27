@@ -22,22 +22,6 @@
                 <td><button @click="onAdd"><font-awesome-icon class="add-colour" icon="plus"/></button></td>
             </tr>
         </table>
-<!--        <div class="cellml-unit" v-for="(unit, index) in unitEntries" :key="index">-->
-<!--            <label>unit:</label>-->
-<!--            <click-to-edit v-model="unit.reference" :value="unit.reference" default-value="reference"/>-->
-<!--            <click-to-edit v-model="unit.prefix" :value="unit.prefix" :fit-content="true" default-value="1"/>-->
-<!--            <click-to-edit v-model="unit.exponent" :value="unit.exponent" :fit-content="true" default-value="1.0"/>-->
-<!--            <click-to-edit v-model="unit.multiplier" :value="unit.multiplier" :fit-content="true" default-value="1.0"/>-->
-<!--            <button @click="onRemove(index)"><font-awesome-icon class="remove-colour" icon="minus"/></button>-->
-<!--        </div>-->
-<!--        <div class="add-cellml-unit">-->
-<!--            <label> Add unit:</label>-->
-<!--            <click-to-edit v-model="reference" default-value="reference"/>-->
-<!--            <click-to-edit v-model="prefix" :fit-content="true" tooltip="prefix"/>-->
-<!--            <click-to-edit v-model="exponent" :fit-content="true" tooltip="exponent"/>-->
-<!--            <click-to-edit v-model="multiplier" :fit-content="true" tooltip="multiplier"/>-->
-<!--            <button @click="onAdd"><font-awesome-icon class="add-colour" icon="plus"/></button>-->
-<!--        </div>-->
     </div>
 </template>
 

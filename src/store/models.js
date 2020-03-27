@@ -1,5 +1,10 @@
 
 const mutations = {
+    loadModel(state, xml) {
+        const parser = new this._vm.$libcellml.Parser();
+        state.data.push(parser.parseModel(xml));
+        state.statuses.push(false);
+    },
     addModel(state) {
         state.data.push(new this._vm.$libcellml.Model());
         state.statuses.push(false);

@@ -173,6 +173,7 @@
         border-radius: 7px;
         /*margin-right: 3px;*/
         min-height: 150px;
+        align-self: flex-start;
     }
 
     .menu {

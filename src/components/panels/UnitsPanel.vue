@@ -5,10 +5,6 @@
             <tr>
                 <th scope="row">Units name:</th>
                 <td><click-to-edit v-model="name" default-value="set units name here"/></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
             </tr>
         </table>
         <cell-m-l-unit-entry :units="units"></cell-m-l-unit-entry>

@@ -7,7 +7,7 @@
          <modaldialog v-if="showModal" @close="onClose">
              <component :is="activePanel" :data="panelData"/>
          </modaldialog>
-         <span>{{ contentSignal }}</span>
+         <span v-show="hasContent"><font-awesome-icon class="content-colour" icon="plus"/></span>
     </div>
 </template>
 
@@ -34,6 +34,9 @@
             ...mapGetters({
                 entityStyle: 'ui/cellMLEntityStyle',
             }),
+            hasContent() {
+                return this.units.name().length > 0;
+            },
         },
         methods: {
             dragStart(index, event) {
@@ -56,12 +59,8 @@
                 };
                 this.showModal = true;
             },
-            hasContent() {
-                return this.units.name().length > 0;
-            },
             onClose() {
                 this.showModal = false;
-                this.contentSignal = this.hasContent() ? '-' : '';
             }
         }
     }
@@ -77,5 +76,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    .content-colour {
+        color: grey;
     }
 </style>

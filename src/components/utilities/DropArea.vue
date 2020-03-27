@@ -15,26 +15,34 @@
                      :style="{backgroundImage: 'url(' + backgroundImage + ')'}">
                     <span v-if="removingEntityUnderDrag">Remove.</span>
                     <span v-else>Drop CellML files or Model entity here.</span>
-                    <!--          <progress max="100" :style="{ visibility: displayProgress }" :value.prop="uploadPercentage"></progress>-->
                 </div>
             </div>
         </div>
+        <modaldialog v-if="showModal" @close="showModal = false">
+            <component :is="activePanel" :data="panelData"/>
+        </modaldialog>
     </slidingpanel>
 </template>
 
 <script>
     import {mapGetters} from 'vuex';
     import SlidingPanel from '@/components/utilities/SlidingPanel';
+    import ModalDialog from "@/components/utilities/ModalDialog";
+    import LoadFilePanel from "@/components/panels/LoadFilePanel";
 
     export default {
         name: 'DropArea',
         components: {
             slidingpanel: SlidingPanel,
+            modaldialog: ModalDialog,
         },
         props: ['full', 'slidable'],
         data() {
             return {
                 acceptsDrop: false,
+                showModal: false,
+                activePanel: LoadFilePanel,
+                panelData: {},
             };
         },
         computed: {
@@ -61,14 +69,22 @@
             _handleUnitsDrop(event) {
                 const unitsIndex = parseInt(event.dataTransfer.getData('int/units-index'));
                 const index = event.dataTransfer.getData('int/model-index');
-                const units = event.dataTransfer.getData('object/js');
-                console.log('Removing units:');
-                console.log(index);
-                console.log(unitsIndex);
-                console.log(units);
                 this.$store.commit('models/removeUnits', {modelIndex: index, unitsIndex: unitsIndex});
             },
+            _handleFilesDrop(files) {
+                console.log(files);
+                this.panelData = {
+                    files: files,
+                };
+                this.showModal = true;
+            },
             drop(event) {
+                let droppedFiles = event.dataTransfer.files;
+                if (droppedFiles.length > 0) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this._handleFilesDrop(droppedFiles);
+                }
                 if (this.acceptsDrop) {
                     event.preventDefault();
                     event.stopPropagation();
@@ -83,6 +99,7 @@
                 }
             },
             _standardDragHandler(event) {
+                // console.log(event);
                 if (event.dataTransfer.effectAllowed === 'copyMove') {
                     this.$store.commit('ui/setMovingEntity', true);
                 }
