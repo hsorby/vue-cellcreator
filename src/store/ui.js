@@ -11,13 +11,18 @@ const unitsEntity = createEntity({
     title: 'Units',
     bgColor: '#a7a7a7',
 });
+const componentEntity = createEntity({
+    name: 'component',
+    title: 'Comp.',
+    bgColor: '#4191d6',
+});
 
 export const ui = {
     namespaced: true,
     state: {
         draggingEntity: false,
         movingEntity: false,
-        entities: [modelEntity, unitsEntity],
+        entities: [modelEntity, unitsEntity, componentEntity],
     },
     mutations: {
         updateDraggingEntity(state, value) {
