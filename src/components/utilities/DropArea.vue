@@ -99,13 +99,15 @@
                 }
             },
             _standardDragHandler(event) {
-                // console.log(event);
                 if (event.dataTransfer.effectAllowed === 'copyMove') {
                     this.$store.commit('ui/setMovingEntity', true);
                 }
                 if (event.target.id === 'GenericDropTarget') {
-                    this.acceptsDrop = true;
                     let isModel = event.dataTransfer.types.includes('model');
+                    if (event.dataTransfer.effectAllowed === 'copy' && !isModel) {
+                        return;
+                    }
+                    this.acceptsDrop = true;
                     event.preventDefault();
                     event.stopPropagation();
                     if (event.dataTransfer.effectAllowed === 'copy' && isModel) {
