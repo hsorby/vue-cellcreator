@@ -90,32 +90,4 @@
         box-shadow: 1px 1px 1px 1px #888888, -1px 1px 1px 1px #888888, 1px -1px 1px 1px #888888, -1px -1px 1px 1px #888888;
     }
 
-    [tooltip] {
-        position: relative;
-    }
-
-    [tooltip]:hover::before {
-        content: attr(tooltip);
-        position: absolute;
-        bottom: -26px;
-        display: inline-block;
-        padding: 3px 6px;
-        border-radius: 2px;
-        background: #000;
-        color: #fff;
-        font-size: 12px;
-        font-family: sans-serif;
-        white-space: nowrap;
-    }
-
-    [tooltip]:hover::after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 8px;
-        display: inline-block;
-        color: #fff;
-        border: 8px solid transparent;
-        border-bottom: 8px solid #000;
-    }
 </style>

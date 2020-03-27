@@ -1,5 +1,6 @@
 <template>
     <div class="cellml-units clickable" :style="entityStyle('units')"
+         :tooltip="name"
          draggable="true"
          @dragstart="dragStart(index, $event)"
          @dragend="dragEnd"
@@ -37,6 +38,9 @@
             hasContent() {
                 return this.units.name().length > 0;
             },
+            name() {
+                return this.hasContent ? this.units.name() : null;
+            },
         },
         methods: {
             dragStart(index, event) {
@@ -61,6 +65,7 @@
             },
             onClose() {
                 this.showModal = false;
+                this.$store.commit('models/modelChanged', this.modelIndex);
             }
         }
     }

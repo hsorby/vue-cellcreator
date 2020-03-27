@@ -18,10 +18,6 @@ export class Model {
     }
 
     removeUnits(index) {
-        // const index = this.units.indexOf(units);
-        console.log(index);
-        // console.log(units);
-        console.log(this.units);
         this.entity.removeUnitsByIndex(index);
         this.units.splice(index, 1);
     }

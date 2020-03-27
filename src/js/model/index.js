@@ -66,7 +66,6 @@ const modelMutations = {
     moveUnits(state, payload) {
         const sourceUnits = state.cellMLModels[payload.sourceModel].takeUnitsByIndex(payload.unitsIndex);
         state.cellMLModels[payload.targetModel].addUnits(sourceUnits);
-        console.log(this._vm);
         state.cellMLModels[payload.sourceModel] = state.cellMLModels[payload.sourceModel];
         // this._vm.set(state.cellMLModels, payload.sourceModel, state.cellMLModels[payload.sourceModel]);
         // this._vm.set(state.cellMLModels, payload.targetModel, state.cellMLModels[payload.targetModel]);

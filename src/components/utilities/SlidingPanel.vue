@@ -11,7 +11,7 @@
 </template>
 
 <script>
-    import styles from '@/assets/sass/variables.scss'
+    // import styles from '@/assets/sass/variables.scss'
     import HamburgerButton from "@/components/utilities/HumburgerButton";
 
     export default {
@@ -50,7 +50,7 @@
         },
         data () {
             return {
-                styles: styles,
+                // styles: styles,
                 widthDef: {'width': this.width},
             }
         },

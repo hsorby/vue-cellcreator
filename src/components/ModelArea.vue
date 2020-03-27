@@ -48,36 +48,6 @@
                 return this.models.length > 1;
             },
         },
-        methods: {
-            submitFiles() {
-                let formData = new FormData();
-                for (let i = 0; i < this.files.length; i++) {
-                    let file = this.files[i];
-                    formData.append('files[' + i + ']', file);
-
-                    let reader = new FileReader();
-                    /*
-                      Add an event listener for when the file has been loaded.
-                    */
-                    reader.addEventListener("progress", function (progressEvent) {
-                        this.uploadPercentage = parseInt(Math.round((progressEvent.loaded * 100) / progressEvent.total));
-                    }.bind(this));
-                    reader.addEventListener("loadstart", function () {
-                        this.displayProgress = "visible";
-                    }.bind(this));
-                    reader.addEventListener("loadend", function () {
-                        setTimeout(function () {
-                            this.displayProgress = "hidden";
-                        }.bind(this), 750);
-                    }.bind(this));
-                    reader.addEventListener("load", function () {
-                        console.log(reader.result);
-                    }.bind(this), false);
-
-                    reader.readAsText(this.files[i]);
-                }
-            },
-        },
     }
 </script>
 

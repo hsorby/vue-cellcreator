@@ -71,8 +71,12 @@
                 const index = event.dataTransfer.getData('int/model-index');
                 this.$store.commit('models/removeUnits', {modelIndex: index, unitsIndex: unitsIndex});
             },
+            _handleComponentDrop(event) {
+                const componentIndexPath = JSON.parse(event.dataTransfer.getData('int/component-index-path'));
+                const index = event.dataTransfer.getData('int/model-index');
+                this.$store.commit('models/removeComponent', {sourceModel: index, sourcePath: componentIndexPath});
+            },
             _handleFilesDrop(files) {
-                console.log(files);
                 this.panelData = {
                     files: files,
                 };
@@ -90,10 +94,13 @@
                     event.stopPropagation();
                     let isModel = event.dataTransfer.types.includes('model');
                     let isUnits = event.dataTransfer.types.includes('units');
+                    let isComponent = event.dataTransfer.types.includes('component');
                     if (isModel) {
                         this._handleModelDrop(event);
                     } else if (isUnits) {
                         this._handleUnitsDrop(event);
+                    } else if (isComponent) {
+                        this._handleComponentDrop(event);
                     }
                     this.acceptsDrop = false;
                 }

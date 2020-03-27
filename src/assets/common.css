@@ -53,10 +53,6 @@
     left: 0;
 }
 
-.z-index-low {
-    z-index: 1;
-}
-
 .entity-menu {
     list-style-type: none;
     margin-block-start: 0;
@@ -79,4 +75,33 @@
 
 .accepts-drop {
     border: 1px dashed black;
+}
+
+[tooltip] {
+    position: relative;
+}
+
+[tooltip]:hover::before {
+    content: attr(tooltip);
+    position: absolute;
+    bottom: -26px;
+    display: inline-block;
+    padding: 3px 6px;
+    border-radius: 2px;
+    background: #000;
+    color: #fff;
+    font-size: 12px;
+    font-family: sans-serif;
+    white-space: nowrap;
+}
+
+[tooltip]:hover::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 8px;
+    display: inline-block;
+    color: #fff;
+    border: 8px solid transparent;
+    border-bottom: 8px solid #000;
 }

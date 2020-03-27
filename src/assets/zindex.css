@@ -1,8 +1,16 @@
 
+.z-index-low {
+    z-index: 1;
+}
+
 .modal-dialog-z-index {
     z-index: 100;
 }
 
 .toolbox-item-z-index {
     z-index: 5;
+}
+
+[tooltip]:hover::before, [tooltip]:hover::after {
+    z-index: 3;
 }

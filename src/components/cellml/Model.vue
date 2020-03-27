@@ -13,14 +13,25 @@
             <clicktoedit v-model="name" class="self-aligned-start" default-value="set model name here"></clicktoedit>
             <slidingmenu class="menu" tag="div" direction="right" v-bind:size="size" v-on:update:size="size = $event">
                 <div>
-                <ul class="entity-menu">
-                    <li class="clickable" @click="printClicked">Print</li>
-                </ul>
+                    <ul class="entity-menu">
+                        <li class="clickable" @click="printClicked">Print</li>
+                    </ul>
                 </div>
             </slidingmenu>
         </div>
-        <div class="display-flex units-container" v-for="(units, unitsIndex) in getUnits(index)" :key="unitsIndex">
-            <cellmlunits :units="units" :index="unitsIndex" :modelIndex="index"/>
+        <div class="model-children display-flex">
+            <div class="units-children">
+                <div class="units-container" v-for="(units, unitsIndex) in getUnits(index)"
+                     :key="'units_' + unitsIndex">
+                    <cellmlunits :units="units" :index="unitsIndex" :modelIndex="index"/>
+                </div>
+            </div>
+            <div class="component-children">
+                <div class="component-container" v-for="(component, componentIndex) in getComponents(index, [])"
+                     :key="'component_' + componentIndex">
+                    <cellmlcomponent :component="component" :index="componentIndex" :indexPath="[]" :modelIndex="index"/>
+                </div>
+            </div>
         </div>
         <modaldialog v-if="showModal" @close="showModal = false">
             <component :is="activePanel" :data="panelData"/>
@@ -35,7 +46,7 @@
     import ModalDialog from "@/components/utilities/ModalDialog";
     import PrintPanel from "@/components/panels/PrintPanel";
     import Units from "@/components/cellml/Units";
-    // import {isNegative} from "@/js/utilities";
+    import Component from "@/components/cellml/Component";
 
     export default {
         name: 'CellMLModel',
@@ -46,6 +57,7 @@
             modaldialog: ModalDialog,
             printpanel: PrintPanel,
             cellmlunits: Units,
+            cellmlcomponent: Component,
         },
         data: function () {
             return {
@@ -64,6 +76,7 @@
         computed: {
             ...mapGetters({
                 entityStyle: 'ui/cellMLEntityStyle',
+                getComponents: 'models/getComponents',
                 getUnits: 'models/getUnits',
                 changeNotification: 'models/changed',
                 getModelStatus: 'models/getStatus',
@@ -114,25 +127,63 @@
                     // Moving existing
                     const sourceIndex = parseInt(event.dataTransfer.getData('int/model-index'));
                     if (sourceIndex !== this.index) {
-                        const payload = {sourceModel: sourceIndex, targetModel: this.index, unitsIndex: parseInt(index)};
+                        const payload = {
+                            sourceModel: sourceIndex,
+                            targetModel: this.index,
+                            unitsIndex: parseInt(index)
+                        };
                         this.$store.commit('models/moveUnits', payload);
                     }
                 } else if (index === '') {
                     // Adding new
                     this.$store.commit('models/addNewUnits', this.index);
                 }
-                console.log('units count: ' + this.model.unitsCount());
+            },
+            _dropComponent(event) {
+                const sourceIndexPathStr = event.dataTransfer.getData('int/component-index-path');
+                if (event.dataTransfer.effectAllowed === 'copy' && sourceIndexPathStr !== '') {
+                    // Copying existing
+                    const sourceIndexPath = JSON.parse(sourceIndexPathStr);
+                    const sourceIndex = parseInt(event.dataTransfer.getData('int/model-index'));
+                    const payload = {sourceModel: sourceIndex, sourcePath: sourceIndexPath,
+                        targetModel: this.index, targetPath: []};
+                    this.$store.commit('models/addClonedComponent', payload);
+                } else if (sourceIndexPathStr !== '') {
+                    // Moving existing
+                    const sourceIndex = parseInt(event.dataTransfer.getData('int/model-index'));
+                    if (sourceIndex !== this.index) {
+                        const sourceIndexPath = JSON.parse(sourceIndexPathStr);
+                        const payload = {
+                            sourceModel: sourceIndex,
+                            sourcePath: sourceIndexPath,
+                            targetModel: this.index,
+                            targetPath: [],
+                        };
+                        this.$store.commit('models/moveComponent', payload);
+                    }
+                } else if (sourceIndexPathStr === '') {
+                    // Adding new
+                    this.$store.commit('models/addNewComponent', {targetModel: this.index, targetPath: []});
+                }
             },
             doDrop(event) {
                 this.canAcceptDrop = false;
+                let isComponent = event.dataTransfer.types.includes('component');
                 let isUnits = event.dataTransfer.types.includes('units');
                 if (isUnits) {
                     this._dropUnits(event);
+                } else if (isComponent) {
+                    this._dropComponent(event);
+                }
+                if (isUnits || isComponent) {
+                    event.stopPropagation();
+                    event.preventDefault();
                 }
             },
             _standardDragHandler(event) {
                 let isUnits = event.dataTransfer.types.includes('units');
-                if (isUnits) {
+                let isComponent = event.dataTransfer.types.includes('component');
+                if (isUnits || isComponent) {
                     event.preventDefault();
                     event.stopPropagation();
                     if (event.type === 'dragenter') {
@@ -178,6 +229,7 @@
 
     .menu {
         background-color: #318c61;
+        margin-left: auto;
     }
 
 </style>
