@@ -59,11 +59,11 @@
         },
         methods: {
             _handleModelDrop(event) {
+                let index = event.dataTransfer.getData('int/model-index');
                 if (this.removingEntityUnderDrag) {
-                    let index = event.dataTransfer.getData('int/model-index');
                     this.$store.commit('models/removeModel', index);
                 } else {
-                    this.$store.commit('models/addModel');
+                    this.$store.commit('models/addModel', index);
                 }
             },
             _handleUnitsDrop(event) {

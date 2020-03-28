@@ -26,12 +26,12 @@
                     <cellmlunits :units="units" :index="unitsIndex" :modelIndex="index"/>
                 </div>
             </div>
-            <div class="component-children">
-                <div class="component-container" v-for="(component, componentIndex) in getComponents(index, [])"
+            <ul class="component-children">
+                <li class="component-container" v-for="(component, componentIndex) in getComponents(index, [])"
                      :key="'component_' + componentIndex">
                     <cellmlcomponent :component="component" :index="componentIndex" :indexPath="[]" :modelIndex="index"/>
-                </div>
-            </div>
+                </li>
+            </ul>
         </div>
         <modaldialog v-if="showModal" @close="showModal = false">
             <component :is="activePanel" :data="panelData"/>
@@ -230,6 +230,16 @@
     .menu {
         background-color: #318c61;
         margin-left: auto;
+    }
+
+    .component-children {
+        padding-inline-start: 1em;
+        margin: 5px 0px;
+    }
+
+    .component-container {
+        display: block;
+        margin-bottom: 3px;
     }
 
 </style>

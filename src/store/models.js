@@ -5,11 +5,17 @@ const mutations = {
         state.data.push(parser.parseModel(xml));
         state.statuses.push(false);
     },
-    addModel(state) {
-        state.data.push(new this._vm.$libcellml.Model());
+    addModel(state, index) {
+        console.log(typeof index);
+        if (index === '') {
+            state.data.push(new this._vm.$libcellml.Model());
+        } else {
+            state.data.push(state.data[index].clone());
+        }
         state.statuses.push(false);
     },
     removeModel(state, index) {
+        console.log(typeof index);
         let m = state.data[index];
         state.data.splice(index, 1);
         state.statuses.splice(index, 1);

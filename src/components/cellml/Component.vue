@@ -1,5 +1,5 @@
 <template>
-    <div class="cellml-component clickable" :style="entityStyle('component')"
+    <li class="cellml-component clickable" :style="entityStyle('component')"
          :class="{'accepts-drop': acceptsDrop}"
          draggable="true"
          @dragstart="dragStart(index, $event)"
@@ -8,16 +8,19 @@
          @drop="doDrop"
          @dragover="allowDrop"
          @dragleave="allowDrop">
-    <div class="display-flex entity-menus-container">
-            <clicktoedit v-model="name" class="self-aligned-start" default-value="set component name here"></clicktoedit>
+        <div class="display-flex entity-menus-container">
+            <clicktoedit v-model="name" class="self-aligned-start" :fit-content="true"
+                         default-value="set component name here"></clicktoedit>
         </div>
         <div class="component-children">
-            <div class="component-container" v-for="(component, componentIndex) in getComponents(modelIndex, [...indexPath, index])"
+            <ul class="component-container"
+                 v-for="(component, componentIndex) in getComponents(modelIndex, [...indexPath, index])"
                  :key="'component_' + componentIndex">
-                <CellMLComponent :component="component" :index="componentIndex" :indexPath="[...indexPath, index]" :modelIndex="modelIndex"/>
-            </div>
+                <CellMLComponent :component="component" :index="componentIndex" :indexPath="[...indexPath, index]"
+                                 :modelIndex="modelIndex"/>
+            </ul>
         </div>
-    </div>
+    </li>
 </template>
 
 <script>
@@ -30,7 +33,7 @@
         components: {
             clicktoedit: ClickToEdit,
         },
-        data: function() {
+        data: function () {
             return {
                 acceptsDrop: false,
             };
@@ -74,8 +77,10 @@
                     const sourceIndex = parseInt(event.dataTransfer.getData('int/model-index'));
                     const sourceIndexPath = JSON.parse(sourceIndexPathStr);
                     const targetIndexPath = [...this.indexPath, parseInt(this.index)];
-                    const payload = {sourceModel: sourceIndex, sourcePath: sourceIndexPath,
-                        targetModel: this.modelIndex, targetPath: targetIndexPath};
+                    const payload = {
+                        sourceModel: sourceIndex, sourcePath: sourceIndexPath,
+                        targetModel: this.modelIndex, targetPath: targetIndexPath
+                    };
                     this.$store.commit('models/addClonedComponent', payload);
                 } else if (sourceIndexPathStr !== '') {
                     // Moving existing
@@ -106,7 +111,7 @@
                     event.stopPropagation();
                     this._dropComponent(event);
                 }
-           },
+            },
             _standardDragHandler(event) {
                 let isComponent = event.dataTransfer.types.includes('component');
                 if (isComponent) {
@@ -130,11 +135,21 @@
     .cellml-component {
         min-height: 30px;
         min-width: 30px;
-        margin: 5px;
+        /*margin: 0px;*/
+        margin-bottom: 2px;
         border-radius: 9%;
         box-shadow: 0 1px 3px rgba(0, 0, 0, .24), 0 0 0 rgba(0, 0, 0, .16);
-        display: flex;
+        /*display: flex;*/
         align-items: center;
         justify-content: center;
+        display: block;
+    }
+
+    ul {
+        list-style-type: none;
+        margin-left: 2em;
+        margin-bottom: 3px;
+        margin-right: 3px;
+        padding: 0;
     }
 </style>
