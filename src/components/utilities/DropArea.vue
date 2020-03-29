@@ -71,6 +71,12 @@
                 const index = event.dataTransfer.getData('int/model-index');
                 this.$store.commit('models/removeUnits', {modelIndex: index, unitsIndex: unitsIndex});
             },
+            _handleVariableDrop(event) {
+                const variableIndex = parseInt(event.dataTransfer.getData('int/variable-index'));
+                const componentIndexPath = JSON.parse(event.dataTransfer.getData('int/component-index-path'));
+                const index = event.dataTransfer.getData('int/model-index');
+                this.$store.commit('models/removeVariable', {sourceModel: index, sourcePath: componentIndexPath, index: variableIndex});
+            },
             _handleComponentDrop(event) {
                 const componentIndexPath = JSON.parse(event.dataTransfer.getData('int/component-index-path'));
                 const index = event.dataTransfer.getData('int/model-index');
@@ -95,12 +101,15 @@
                     let isModel = event.dataTransfer.types.includes('model');
                     let isUnits = event.dataTransfer.types.includes('units');
                     let isComponent = event.dataTransfer.types.includes('component');
+                    let isVariable = event.dataTransfer.types.includes('variable');
                     if (isModel) {
                         this._handleModelDrop(event);
                     } else if (isUnits) {
                         this._handleUnitsDrop(event);
                     } else if (isComponent) {
                         this._handleComponentDrop(event);
+                    } else if (isVariable) {
+                        this._handleVariableDrop(event);
                     }
                     this.acceptsDrop = false;
                 }

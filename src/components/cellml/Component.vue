@@ -1,6 +1,7 @@
 <template>
     <li class="cellml-component clickable" :style="entityStyle('component')"
          :class="{'accepts-drop': acceptsDrop}"
+         @click="onClick"
          draggable="true"
          @dragstart="dragStart(index, $event)"
          @dragend="dragEnd"
@@ -11,6 +12,15 @@
         <div class="display-flex entity-menus-container">
             <clicktoedit v-model="name" class="self-aligned-start" :fit-content="true"
                          default-value="set component name here"></clicktoedit>
+            <div class="component-math" v-if="hasMath">
+                <span class="sigma-span" :style="{backgroundImage: 'url(' + backgroundImage + ')'}"> </span>
+            </div>
+        </div>
+        <div class="variable-children">
+            <div class="variable-container" v-for="(variable, variableIndex) in getVariables(modelIndex, [...indexPath, index])"
+                 :key="'variable_' + variableIndex">
+                <cellmlvariable :variable="variable" :index="variableIndex" :componentPath="[...indexPath, index]" :modelIndex="modelIndex"/>
+            </div>
         </div>
         <div class="component-children">
             <ul class="component-container"
@@ -26,12 +36,14 @@
 <script>
     import {mapGetters} from "vuex";
     import ClickToEdit from "@/components/utilities/ClickToEdit";
+    import Variable from "@/components/cellml/Variable";
 
     export default {
         name: 'CellMLComponent',
         props: ['component', 'index', 'indexPath', 'modelIndex'],
         components: {
             clicktoedit: ClickToEdit,
+            cellmlvariable: Variable,
         },
         data: function () {
             return {
@@ -42,6 +54,7 @@
             ...mapGetters({
                 entityStyle: 'ui/cellMLEntityStyle',
                 getComponents: 'models/getComponents',
+                getVariables: 'models/getVariables',
             }),
             name: {
                 get() {
@@ -53,7 +66,13 @@
             },
             componentPath() {
                 return this.indexPath;
-            }
+            },
+            hasMath() {
+                return this.component.math.length === 0;
+            },
+            backgroundImage() {
+                return require('@/assets/sigma.svg');
+            },
         },
         methods: {
             dragStart(index, event) {
@@ -103,13 +122,55 @@
                     this.$store.commit('models/addNewComponent', {targetModel: this.modelIndex, targetPath: indexPath});
                 }
             },
+            _dropVariable(event) {
+                const index = event.dataTransfer.getData('int/variable-index');
+                // const variableIndex = event.
+                if (event.dataTransfer.effectAllowed === 'copy' && index !== '') {
+                    // Copying existing
+                    const sourceIndex = parseInt(event.dataTransfer.getData('int/model-index'));
+                    const sourceIndexPath = JSON.parse(event.dataTransfer.getData('int/component-index-path'));
+                    const targetIndexPath = [...this.indexPath, parseInt(this.index)];
+                    const payload = {
+                        sourceModel: sourceIndex, sourcePath: sourceIndexPath,
+                        targetModel: this.modelIndex, targetPath: targetIndexPath,
+                        index: parseInt(index),
+                    };
+                    this.$store.commit('models/addClonedVariable', payload);
+                } else if (index !== '') {
+                    // Moving existing
+                    const sourceIndex = parseInt(event.dataTransfer.getData('int/model-index'));
+                    const sourceIndexPathStr = event.dataTransfer.getData('int/component-index-path');
+                    const targetIndexPath = [...this.indexPath, parseInt(this.index)];
+                    const sourceIndexPath = JSON.parse(sourceIndexPathStr);
+                    const targetIndexPathStr = JSON.stringify([...targetIndexPath, sourceIndexPath[sourceIndexPath.length - 1]]);
+                    if (!(sourceIndex === this.modelIndex && sourceIndexPathStr === targetIndexPathStr)) {
+                        const payload = {
+                            sourceModel: sourceIndex,
+                            sourcePath: sourceIndexPath,
+                            targetModel: this.modelIndex,
+                            targetPath: targetIndexPath,
+                            index: parseInt(index),
+                        };
+                        this.$store.commit('models/moveVariable', payload);
+                    }
+                } else if (index === '') {
+                    // Adding new
+                    const indexPath = [...this.indexPath, this.index];
+                    this.$store.commit('models/addNewVariable', {targetModel: this.modelIndex, targetPath: indexPath});
+                }
+            },
             doDrop(event) {
                 this.acceptsDrop = false;
                 let isComponent = event.dataTransfer.types.includes('component');
-                if (isComponent) {
+                let isVariable = event.dataTransfer.types.includes('variable');
+                if (isComponent || isVariable) {
                     event.preventDefault();
                     event.stopPropagation();
+                }
+                if (isComponent) {
                     this._dropComponent(event);
+                } else if (isVariable) {
+                    this._dropVariable(event);
                 }
             },
             _standardDragHandler(event) {
@@ -127,6 +188,10 @@
             allowDrop(event) {
                 this._standardDragHandler(event);
             },
+            onClick(event) {
+                console.log("On component click.");
+                console.log(event);
+            }
         }
     }
 </script>
@@ -145,11 +210,33 @@
         display: block;
     }
 
+    .variable-children, .variable-container {
+        display: flex;
+    }
+
     ul {
         list-style-type: none;
         margin-left: 2em;
         margin-bottom: 3px;
         margin-right: 3px;
         padding: 0;
+    }
+
+    .component-math {
+        min-height: 20px;
+        min-width: 20px;
+        margin: 3px 3px 3px auto;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .24), 0 0 0 rgba(0, 0, 0, .16);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
+    }
+
+    .sigma-span {
+        width: 75%;
+        height: 75%;
+        background-repeat: no-repeat;
     }
 </style>

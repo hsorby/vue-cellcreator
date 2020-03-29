@@ -1,4 +1,17 @@
 
+function prepareForStateUpdate(state, payload, update) {
+    if (update.source) {
+        updateModelStatus(state, payload.sourceModel);
+    }
+    if (update.target) {
+        updateModelStatus(state, payload.targetModel);
+    }
+    state.changed = !state.changed;
+    let sourceComponentEntity = getComponentEntity(state.data[payload.sourceModel], payload.sourcePath);
+    let targetComponentEntity = getComponentEntity(state.data[payload.targetModel], payload.targetPath);
+    return {sourceComponentEntity, targetComponentEntity};
+}
+
 const mutations = {
     loadModel(state, xml) {
         const parser = new this._vm.$libcellml.Parser();
@@ -53,24 +66,16 @@ const mutations = {
         componentEntity.addComponent(new this._vm.$libcellml.Component());
     },
     addClonedComponent(state, payload) {
-        updateModelStatus(state, payload.targetModel);
-        state.changed = !state.changed;
         const componentIndex = payload.sourcePath.pop();
-        const sourceComponentEntity = getComponentEntity(state.data[payload.sourceModel], payload.sourcePath);
-        let targetComponentEntity = getComponentEntity(state.data[payload.targetModel], payload.targetPath);
+        let {sourceComponentEntity, targetComponentEntity} = prepareForStateUpdate(state, payload, {source: false, target: true});
         const c = sourceComponentEntity.componentByIndex(componentIndex);
         targetComponentEntity.addComponent(c.clone());
     },
     moveComponent(state, payload) {
-        updateModelStatus(state, payload.targetModel);
-        updateModelStatus(state, payload.sourceModel);
-        state.changed = !state.changed;
         const componentIndex = payload.sourcePath.pop();
-        let sourceComponentEntity = getComponentEntity(state.data[payload.sourceModel], payload.sourcePath);
-        let targetComponentEntity = getComponentEntity(state.data[payload.targetModel], payload.targetPath);
+        let {sourceComponentEntity, targetComponentEntity} = prepareForStateUpdate(state, payload, {source: true, target: true});
         const c = sourceComponentEntity.takeComponentByIndex(componentIndex);
         targetComponentEntity.addComponent(c);
-
     },
     removeComponent(state, payload) {
         updateModelStatus(state, payload.sourceModel);
@@ -79,6 +84,29 @@ const mutations = {
         let targetComponentEntity = getComponentEntity(state.data[payload.sourceModel], payload.sourcePath);
         let c = targetComponentEntity.takeComponentByIndex(componentIndex);
         c.delete();
+    },
+    addNewVariable(state, payload) {
+        updateModelStatus(state, payload.targetModel);
+        state.changed = !state.changed;
+        let componentEntity = getComponentEntity(state.data[payload.targetModel], payload.targetPath);
+        componentEntity.addVariable(new this._vm.$libcellml.Variable());
+    },
+    addClonedVariable(state, payload) {
+        let {sourceComponentEntity, targetComponentEntity} = prepareForStateUpdate(state, payload, {source: false, target: true});
+        const v = sourceComponentEntity.variableByIndex(payload.index);
+        targetComponentEntity.addVariable(v.clone());
+    },
+    moveVariable(state, payload) {
+        let {sourceComponentEntity, targetComponentEntity} = prepareForStateUpdate(state, payload, {source: true, target: true});
+        const v = sourceComponentEntity.takeVariableByIndex(payload.index);
+        targetComponentEntity.addVariable(v);
+    },
+    removeVariable(state, payload) {
+        updateModelStatus(state, payload.sourceModel);
+        state.changed = !state.changed;
+        let targetComponentEntity = getComponentEntity(state.data[payload.sourceModel], payload.sourcePath);
+        let v = targetComponentEntity.takeVariableByIndex(payload.index);
+        v.delete();
     },
     modelChanged(state, index) {
         updateModelStatus(state, index);
@@ -118,11 +146,20 @@ const getters = {
     getComponents: (state) => (index, indexPath) => {
         let components = [];
         let componentEntity = getComponentEntity(state.data[index], indexPath);
-        const componentsCount = componentEntity.componentCount();
-        for (let componentIndex = 0; componentIndex < componentsCount; componentIndex++) {
+        const componentCount = componentEntity.componentCount();
+        for (let componentIndex = 0; componentIndex < componentCount; componentIndex++) {
             components.push(componentEntity.componentByIndex(componentIndex));
         }
         return components;
+    },
+    getVariables: (state) => (index, indexPath) => {
+        let variables = [];
+        let componentEntity = getComponentEntity(state.data[index], indexPath);
+        const variableCount = componentEntity.variableCount();
+        for (let variableIndex = 0; variableIndex < variableCount; variableIndex++) {
+            variables.push(componentEntity.variableByIndex(variableIndex));
+        }
+        return variables;
     },
     changed: (state) => {
         return state.changed;

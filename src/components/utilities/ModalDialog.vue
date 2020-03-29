@@ -2,7 +2,7 @@
     <transition name="modal">
         <div class="modal-mask modal-dialog-z-index justify-center align-center display-flex">
             <div class="modal-wrapper">
-                <div class="modal-container" @keydown.esc="$emit('close')">
+                <div class="modal-container" @keydown.esc="$emit('close')" @click="onClick">
                     <div class="modal-close-button" v-if="showCloseButton">
                         <hamburgerbutton :initial-state="true" @activated="$emit('close')"/>
                     </div>
@@ -31,6 +31,12 @@
                 showCloseButton: true,
             }
         },
+        methods: {
+            onClick(event) {
+                console.log("on modal click.");
+                event.stopPropagation();
+            }
+        }
     }
 </script>
 
