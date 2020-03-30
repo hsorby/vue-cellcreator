@@ -58,7 +58,8 @@
                 this.$store.commit('ui/updateDraggingEntity', false);
                 this.$store.commit('ui/setMovingEntity', false);
             },
-            onClick() {
+            onClick(event) {
+                event.stopPropagation();
                 this.panelData = {
                     variable: this.variable,
                 };

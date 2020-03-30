@@ -71,6 +71,7 @@
                 panelData: {},
                 canAcceptDrop: false,
                 status: false,
+                pendingLeave: false,
             };
         },
         computed: {
@@ -151,7 +152,10 @@
                 } else if (sourceIndexPathStr !== '') {
                     // Moving existing
                     const sourceIndex = parseInt(event.dataTransfer.getData('int/model-index'));
-                    if (sourceIndex !== this.index) {
+                    const sourceIndexPath = JSON.parse(sourceIndexPathStr);
+                    const targetIndexPath = [sourceIndex];
+                    const targetIndexPathStr = JSON.stringify(targetIndexPath.slice(0, sourceIndexPath.length));
+                    if (!(sourceIndex === this.index && sourceIndexPathStr === targetIndexPathStr)) {
                         const sourceIndexPath = JSON.parse(sourceIndexPathStr);
                         const payload = {
                             sourceModel: sourceIndex,
@@ -186,10 +190,16 @@
                 if (isUnits || isComponent) {
                     event.preventDefault();
                     event.stopPropagation();
-                    if (event.type === 'dragenter') {
+                    if (event.type === 'dragenter' || event.type === 'dragover') {
                         this.canAcceptDrop = true;
+                        this.pendingLeave = false;
                     } else if (event.type === 'dragleave') {
-                        this.canAcceptDrop = false;
+                        setTimeout(function () {
+                            if (this.pendingLeave) {
+                                this.canAcceptDrop = false;
+                            }
+                        }.bind(this), 100);
+                        this.pendingLeave = true;
                     }
                 }
             },
@@ -230,6 +240,9 @@
     .menu {
         background-color: #318c61;
         margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
     }
 
     .component-children {

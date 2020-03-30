@@ -13,8 +13,12 @@
                 <td><click-to-edit v-model="initialValue" default-value=""/></td>
             </tr>
             <tr>
-                <th scope="row">Interface type:</th>
-                <td>something</td>
+                <th scope="row"><label for="variableInterfaceType">Interface type:</label></th>
+                <td>
+                    <select id="variableInterfaceType" v-model="interfaceType">
+                        <option v-for="(item, index) in getInterfaceTypes" :key="index" :value="item">{{ item }}</option>
+                </select>
+                </td>
             </tr>
         </table>
         <button class="variable-panel-button" @click.stop @click.prevent="$parent.$emit('close')">Done</button>
@@ -35,11 +39,6 @@
                 variable: this.data.variable,
             }
         },
-        mounted() {
-            console.log(this.variable);
-            console.log(this.variable.InterfaceType);
-            console.log(this.variable.interfaceType());
-        },
         computed: {
             name: {
                 get() {
@@ -56,6 +55,27 @@
                 set(value) {
                     this.variable.setInitialValueByString(value);
                 },
+            },
+            interfaceType: {
+                get() {
+                    return this.variable.interfaceType();
+                },
+                set(value) {
+                    if (value === "NONE") {
+                        this.variable.removeInterfaceType();
+                    } else {
+                        this.variable.setInterfaceTypeByString(value);
+                    }
+                }
+            },
+            getInterfaceTypes() {
+                let types = [];
+                for (let c in this.$libcellml.Variable_InterfaceType.values) {
+                    const enumLongName = this.$libcellml.Variable_InterfaceType.values[c].constructor.name;
+                    const splitNames = enumLongName.split('Variable_InterfaceType_');
+                    types.push(splitNames[splitNames.length - 1]);
+                }
+                return types;
             }
         }
     }

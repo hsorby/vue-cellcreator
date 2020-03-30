@@ -1,14 +1,14 @@
 <template>
     <li class="cellml-component clickable" :style="entityStyle('component')"
-         :class="{'accepts-drop': acceptsDrop}"
-         @click="onClick"
-         draggable="true"
-         @dragstart="dragStart(index, $event)"
-         @dragend="dragEnd"
-         @dragenter="allowDrop"
-         @drop="doDrop"
-         @dragover="allowDrop"
-         @dragleave="allowDrop">
+        :class="{'accepts-drop': canAcceptDrop}"
+        @click="onClick"
+        draggable="true"
+        @dragstart="dragStart(index, $event)"
+        @dragend="dragEnd"
+        @dragenter="allowDrop"
+        @drop="doDrop"
+        @dragover="allowDrop"
+        @dragleave="allowDrop">
         <div class="display-flex entity-menus-container">
             <clicktoedit v-model="name" class="self-aligned-start" :fit-content="true"
                          default-value="set component name here"></clicktoedit>
@@ -17,15 +17,17 @@
             </div>
         </div>
         <div class="variable-children">
-            <div class="variable-container" v-for="(variable, variableIndex) in getVariables(modelIndex, [...indexPath, index])"
+            <div class="variable-container"
+                 v-for="(variable, variableIndex) in getVariables(modelIndex, [...indexPath, index])"
                  :key="'variable_' + variableIndex">
-                <cellmlvariable :variable="variable" :index="variableIndex" :componentPath="[...indexPath, index]" :modelIndex="modelIndex"/>
+                <cellmlvariable :variable="variable" :index="variableIndex" :componentPath="[...indexPath, index]"
+                                :modelIndex="modelIndex"/>
             </div>
         </div>
         <div class="component-children">
             <ul class="component-container"
-                 v-for="(component, componentIndex) in getComponents(modelIndex, [...indexPath, index])"
-                 :key="'component_' + componentIndex">
+                v-for="(component, componentIndex) in getComponents(modelIndex, [...indexPath, index])"
+                :key="'component_' + componentIndex">
                 <CellMLComponent :component="component" :index="componentIndex" :indexPath="[...indexPath, index]"
                                  :modelIndex="modelIndex"/>
             </ul>
@@ -38,6 +40,36 @@
     import ClickToEdit from "@/components/utilities/ClickToEdit";
     import Variable from "@/components/cellml/Variable";
 
+    function isChildComponent(sourceModel, sourcePath, targetModel, targetPath) {
+        // Is the target component a child of the source component?
+
+        // Not if the models are different.
+        if (sourceModel !== targetModel) {
+            return false;
+        }
+
+        // Not if the target path does not start the same as the source path.
+        const testTargetPath = targetPath.slice(0, sourcePath.length);
+        const sourcePathStr = JSON.stringify(sourcePath);
+        const testTargetPathStr = JSON.stringify(testTargetPath);
+        return sourcePathStr === testTargetPathStr;
+    }
+
+    function isTargetParentComponent(sourceModel, sourcePath, targetModel, targetPath) {
+        // Is the target component the parent of the source component?
+
+        // Not if the models are different.
+        if (sourceModel !== targetModel) {
+            return false;
+        }
+
+        // Yes if the source path starts the same as the target path.
+        const testSourcePath = sourcePath.slice(0, sourcePath.length - 1);
+        const targetPathStr = JSON.stringify(targetPath);
+        const testSourcePathStr = JSON.stringify(testSourcePath);
+        return targetPathStr === testSourcePathStr;
+    }
+
     export default {
         name: 'CellMLComponent',
         props: ['component', 'index', 'indexPath', 'modelIndex'],
@@ -47,7 +79,8 @@
         },
         data: function () {
             return {
-                acceptsDrop: false,
+                canAcceptDrop: false,
+                pendingLeave: false,
             };
         },
         computed: {
@@ -73,6 +106,9 @@
             backgroundImage() {
                 return require('@/assets/sigma.svg');
             },
+            acceptsDrop() {
+                return this.canAcceptDrop;
+            }
         },
         methods: {
             dragStart(index, event) {
@@ -104,10 +140,12 @@
                 } else if (sourceIndexPathStr !== '') {
                     // Moving existing
                     const sourceIndex = parseInt(event.dataTransfer.getData('int/model-index'));
-                    const targetIndexPath = [...this.indexPath, parseInt(this.index)];
                     const sourceIndexPath = JSON.parse(sourceIndexPathStr);
-                    const targetIndexPathStr = JSON.stringify([...targetIndexPath, sourceIndexPath[sourceIndexPath.length - 1]]);
-                    if (!(sourceIndex === this.modelIndex && sourceIndexPathStr === targetIndexPathStr)) {
+                    const targetIndexPath = [...this.indexPath, parseInt(this.index)];
+
+                    const isChild = isChildComponent(sourceIndex, sourceIndexPath, this.modelIndex, targetIndexPath);
+                    const isParent = isTargetParentComponent(sourceIndex, sourceIndexPath, this.modelIndex, targetIndexPath);
+                    if (!isChild && !isParent) {
                         const payload = {
                             sourceModel: sourceIndex,
                             sourcePath: sourceIndexPath,
@@ -160,7 +198,7 @@
                 }
             },
             doDrop(event) {
-                this.acceptsDrop = false;
+                this.canAcceptDrop = false;
                 let isComponent = event.dataTransfer.types.includes('component');
                 let isVariable = event.dataTransfer.types.includes('variable');
                 if (isComponent || isVariable) {
@@ -175,13 +213,20 @@
             },
             _standardDragHandler(event) {
                 let isComponent = event.dataTransfer.types.includes('component');
-                if (isComponent) {
+                let isVariable = event.dataTransfer.types.includes('variable');
+                if (isComponent || isVariable) {
                     event.preventDefault();
                     event.stopPropagation();
-                    if (event.type === 'dragenter') {
-                        this.acceptsDrop = true;
+                    if (event.type === 'dragenter' || event.type === 'dragover') {
+                        this.canAcceptDrop = true;
+                        this.pendingLeave = false;
                     } else if (event.type === 'dragleave') {
-                        this.acceptsDrop = false;
+                        setTimeout(function () {
+                            if (this.pendingLeave) {
+                                this.canAcceptDrop = false;
+                            }
+                        }.bind(this), 100);
+                        this.pendingLeave = true;
                     }
                 }
             },

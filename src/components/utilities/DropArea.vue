@@ -39,7 +39,7 @@
         props: ['full', 'slidable'],
         data() {
             return {
-                acceptsDrop: false,
+                canAcceptDrop: false,
                 showModal: false,
                 activePanel: LoadFilePanel,
                 panelData: {},
@@ -55,6 +55,9 @@
             },
             removingEntityUnderDrag() {
                 return this.entityUnderDrag && this.movingEntity;
+            },
+            acceptsDrop() {
+                return this.canAcceptDrop;
             },
         },
         methods: {
@@ -95,7 +98,7 @@
                     event.stopPropagation();
                     this._handleFilesDrop(droppedFiles);
                 }
-                if (this.acceptsDrop) {
+                if (this.canAcceptDrop) {
                     event.preventDefault();
                     event.stopPropagation();
                     let isModel = event.dataTransfer.types.includes('model');
@@ -111,7 +114,7 @@
                     } else if (isVariable) {
                         this._handleVariableDrop(event);
                     }
-                    this.acceptsDrop = false;
+                    this.canAcceptDrop = false;
                 }
             },
             _standardDragHandler(event) {
@@ -123,7 +126,7 @@
                     if (event.dataTransfer.effectAllowed === 'copy' && !isModel) {
                         return;
                     }
-                    this.acceptsDrop = true;
+                    this.canAcceptDrop = event.type === 'dragenter' || event.type === 'dragover';
                     event.preventDefault();
                     event.stopPropagation();
                     if (event.dataTransfer.effectAllowed === 'copy' && isModel) {
