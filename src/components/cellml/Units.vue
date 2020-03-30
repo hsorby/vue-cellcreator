@@ -66,7 +66,7 @@
             onClose() {
                 this.showModal = false;
                 this.$store.commit('models/modelChanged', this.modelIndex);
-            }
+            },
         }
     }
 </script>

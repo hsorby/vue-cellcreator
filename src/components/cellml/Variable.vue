@@ -1,9 +1,14 @@
 <template>
     <div class="cellml-variable clickable" :style="entityStyle('variable')"
          :tooltip="name"
+         :class="{'accepts-drop': canAcceptDrop}"
          draggable="true"
          @dragstart="dragStart(index, $event)"
          @dragend="dragEnd"
+         @dragenter="allowDrop"
+         @dragover="allowDrop"
+         @dragleave="allowDrop"
+         @drop="doDrop"
          @click="onClick">
          <modaldialog v-if="showModal" @close="onClose">
              <component :is="activePanel" :data="panelData"/>
@@ -29,17 +34,22 @@
                 panelData: {},
                 activePanel: VariablePanel,
                 contentSignal: '',
+                canAcceptDrop: false,
             };
         },
         computed: {
             ...mapGetters({
                 entityStyle: 'ui/cellMLEntityStyle',
+                getUnitsAt: 'models/getUnitsAt'
             }),
             hasContent() {
                 return this.variable.name().length > 0;
             },
             name() {
                 return this.hasContent ? this.variable.name() : null;
+            },
+            acceptsDrop() {
+                return this.canAcceptDrop;
             },
         },
         methods: {
@@ -68,7 +78,30 @@
             onClose() {
                 this.showModal = false;
                 this.$store.commit('models/modelChanged', this.modelIndex);
-            }
+            },
+            allowDrop(event) {
+                const isUnits = event.dataTransfer.types.includes('units');
+                if (isUnits) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (event.type === 'dragenter' || event.type === 'dragover') {
+                        this.canAcceptDrop = true;
+                    } else if (event.type === 'dragleave') {
+                        this.canAcceptDrop = false;
+                    }
+                }
+            },
+            doDrop(event) {
+                if (this.canAcceptDrop) {
+                    this.canAcceptDrop = false;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const modelIndex = event.dataTransfer.getData('int/model-index');
+                    const unitsIndex = parseInt(event.dataTransfer.getData('int/units-index'));
+                    const units = this.getUnitsAt(modelIndex, unitsIndex);
+                    this.variable.setUnitsByUnits(units);
+                }
+            },
         }
     }
 </script>

@@ -143,6 +143,9 @@ const getters = {
         }
         return units;
     },
+    getUnitsAt: (state) => (modelIndex, unitsIndex) => {
+        return state.data[modelIndex].unitsByIndex(unitsIndex);
+    },
     getComponents: (state) => (index, indexPath) => {
         let components = [];
         let componentEntity = getComponentEntity(state.data[index], indexPath);

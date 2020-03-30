@@ -15,6 +15,7 @@
                 <div>
                     <ul class="entity-menu">
                         <li class="clickable" @click="printClicked">Print</li>
+                        <li class="clickable" @click="validateClicked">Validate</li>
                     </ul>
                 </div>
             </slidingmenu>
@@ -106,6 +107,15 @@
             },
         },
         methods: {
+            validateClicked() {
+                const validator = new this.$libcellml.Validator();
+                validator.validateModel(this.model);
+                console.log("Error count: " + validator.errorCount());
+                for (let index = 0; index < validator.errorCount(); index++) {
+                    const err = validator.error(index);
+                    console.log(err.description());
+                }
+            },
             printClicked() {
                 const printer = new this.$libcellml.Printer();
                 const printedModel = printer.printModel(this.model);
@@ -240,6 +250,12 @@
     .menu {
         background-color: #318c61;
         margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .entity-menu {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
