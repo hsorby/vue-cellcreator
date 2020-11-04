@@ -1,5 +1,6 @@
 <template>
-    <div class="cellml-variable clickable advanced-tooltip-able" :style="entityStyle('variable')"
+    <div class="cellml-reset clickable advanced-tooltip-able"
+         :style="entityStyle('reset')"
          :class="{'accepts-drop': canAcceptDrop}"
          draggable="true"
          @dragstart="doDragStart(index, $event)"
@@ -9,13 +10,13 @@
          @dragleave="allowDrop"
          @drop="doDrop"
          @click="onClick">
+        <span v-show="hasContent"><font-awesome-icon class="content-colour" icon="plus"/></span>
         <modaldialog v-if="showModal" @close="onClose">
             <component :is="activePanel" :data="panelData"/>
         </modaldialog>
-        <span v-show="hasContent"><font-awesome-icon class="content-colour" icon="plus"/></span>
         <infotip v-if="showAdvancedTooltip">
             <div>
-                <span>Name: {{ name }}</span>
+                <span>Order: {{ order }}</span>
             </div>
         </infotip>
     </div>
@@ -24,13 +25,13 @@
 <script>
     import {mapGetters} from "vuex";
     import ModalDialog from "@/components/utilities/ModalDialog";
-    import VariablePanel from "@/components/panels/VariablePanel";
+    import ResetPanel from "@/components/panels/ResetPanel";
     import AdvancedTooltip from "@/components/utilities/AdvancedTooltip";
     import {advancedTooltipModalEntity} from "@/components/mixins/AdvancedTooltipModalEntity";
 
     export default {
-        name: 'CellMLVariable',
-        props: ['variable', 'index', 'componentPath', 'modelIndex'],
+        name: 'CellMLReset',
+        props: ['reset', 'index', 'componentPath', 'modelIndex'],
         mixins: [advancedTooltipModalEntity],
         components: {
             modaldialog: ModalDialog,
@@ -39,28 +40,28 @@
         data: function () {
             return {
                 panelData: {},
-                activePanel: VariablePanel,
+                activePanel: ResetPanel,
                 contentSignal: '',
                 canAcceptDrop: false,
             };
         },
-        created: function() {
+        created: function () {
             this.panelData = {
-                variable: this.variable,
+                reset: this.reset,
                 model: this.getModel(this.modelIndex),
             };
         },
         computed: {
             ...mapGetters({
                 entityStyle: 'ui/cellMLEntityStyle',
-                getUnitsAt: 'models/getUnitsAt',
+                getVariableAt: 'models/getVariableAt',
                 getModel: 'models/getModel',
             }),
             hasContent() {
-                return this.variable.name().length > 0;
+                return this.reset.isOrderSet();
             },
-            name() {
-                return this.hasContent ? this.variable.name() : null;
+            order() {
+                return this.hasContent ? this.reset.order() : null;
             },
             acceptsDrop() {
                 return this.canAcceptDrop;
@@ -71,17 +72,17 @@
                 this.showAdvancedTooltip = false;
                 event.stopPropagation();
                 event.dataTransfer.effectAllowed = 'copyMove';
-                event.dataTransfer.setData('int/variable-index', index);
+                event.dataTransfer.setData('int/reset-index', index);
                 event.dataTransfer.setData('int/model-index', this.modelIndex);
                 event.dataTransfer.setData('int/component-index-path', JSON.stringify(this.componentPath));
                 event.dataTransfer.setData('text/plain', 'units');
-                event.dataTransfer.setData('variable', null);
+                event.dataTransfer.setData('reset', null);
                 this.$store.commit('ui/updateDraggingEntity', true);
                 this.$store.commit('ui/setMovingEntity', true);
             },
             allowDrop(event) {
-                const isUnits = event.dataTransfer.types.includes('units');
-                if (isUnits) {
+                const isVariable = event.dataTransfer.types.includes('variable');
+                if (isVariable) {
                     event.preventDefault();
                     event.stopPropagation();
                     if (event.type === 'dragenter' || event.type === 'dragover') {
@@ -97,9 +98,10 @@
                     event.preventDefault();
                     event.stopPropagation();
                     const modelIndex = event.dataTransfer.getData('int/model-index');
-                    const unitsIndex = parseInt(event.dataTransfer.getData('int/units-index'));
-                    const units = this.getUnitsAt(modelIndex, unitsIndex);
-                    this.variable.setUnitsByUnits(units);
+                    const variableIndex = parseInt(event.dataTransfer.getData('int/variable-index'));
+                    const componentIndexPath = JSON.parse(event.dataTransfer.getData('int/component-index-path'));
+                    const variable = this.getVariableAt(modelIndex, componentIndexPath, variableIndex);
+                    this.reset.setVariable(variable);
                 }
             },
         }
@@ -107,7 +109,7 @@
 </script>
 
 <style scoped="true">
-    .cellml-variable {
+    .cellml-reset {
         min-height: 30px;
         min-width: 30px;
         margin: 5px;

@@ -14,7 +14,7 @@
                 <div class="background-image-settings align-end justify-center display-flex"
                      :style="{backgroundImage: 'url(' + backgroundImage + ')'}">
                     <span v-if="removingEntityUnderDrag">Remove.</span>
-                    <span v-else>Drop CellML files or Model entity here.</span>
+                    <span v-else>Drop CellML files or<br/> Model entity here.</span>
                 </div>
             </div>
         </div>
@@ -80,6 +80,12 @@
                 const index = event.dataTransfer.getData('int/model-index');
                 this.$store.commit('models/removeVariable', {sourceModel: index, sourcePath: componentIndexPath, index: variableIndex});
             },
+            _handleResetDrop(event) {
+                const resetIndex = parseInt(event.dataTransfer.getData('int/reset-index'));
+                const componentIndexPath = JSON.parse(event.dataTransfer.getData('int/component-index-path'));
+                const index = event.dataTransfer.getData('int/model-index');
+                this.$store.commit('models/removeReset', {sourceModel: index, sourcePath: componentIndexPath, index: resetIndex});
+            },
             _handleComponentDrop(event) {
                 const componentIndexPath = JSON.parse(event.dataTransfer.getData('int/component-index-path'));
                 const index = event.dataTransfer.getData('int/model-index');
@@ -105,6 +111,7 @@
                     let isUnits = event.dataTransfer.types.includes('units');
                     let isComponent = event.dataTransfer.types.includes('component');
                     let isVariable = event.dataTransfer.types.includes('variable');
+                    let isReset = event.dataTransfer.types.includes('reset');
                     if (isModel) {
                         this._handleModelDrop(event);
                     } else if (isUnits) {
@@ -113,6 +120,8 @@
                         this._handleComponentDrop(event);
                     } else if (isVariable) {
                         this._handleVariableDrop(event);
+                    } else if (isReset) {
+                        this._handleResetDrop(event)
                     }
                     this.canAcceptDrop = false;
                 }

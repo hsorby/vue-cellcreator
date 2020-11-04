@@ -8,7 +8,7 @@
                class="nice-input"
                @keydown="keydown"
                @keyup="keyup"
-               draggable="true" @dragstart="preventDragging($event)">
+               draggable="true" @dragstart="preventDragging($event)" />
     </label>
 </template>
 

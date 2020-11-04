@@ -23,12 +23,18 @@ const variableEntity = createEntity({
     bgColor: '#e0e24f',
 });
 
+const resetEntity = createEntity({
+    name: 'reset',
+    title: 'Reset',
+    bgColor: '#e34545',
+});
+
 export const ui = {
     namespaced: true,
     state: {
         draggingEntity: false,
         movingEntity: false,
-        entities: [modelEntity, unitsEntity, componentEntity, variableEntity],
+        entities: [modelEntity, unitsEntity, componentEntity, variableEntity, resetEntity],
     },
     mutations: {
         updateDraggingEntity(state, value) {

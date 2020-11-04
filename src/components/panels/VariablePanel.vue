@@ -9,6 +9,12 @@
         </table>
         <table>
             <tr>
+                <th scope="row">Units:</th>
+                <td>
+                    <units-combo-box :model="model" :variable="variable"/>
+                </td>
+            </tr>
+            <tr>
                 <th scope="row">Initial value:</th>
                 <td><click-to-edit v-model="initialValue" default-value=""/></td>
             </tr>
@@ -27,16 +33,18 @@
 
 <script>
     import ClickToEdit from "@/components/utilities/ClickToEdit";
+    import UnitsComboBox from "@/components/widgets/UnitsComboBox";
 
     export default {
         name: 'VariablePanel',
-        components: {ClickToEdit},
+        components: {UnitsComboBox, ClickToEdit},
         props: {
             data: Object,
         },
         data() {
             return {
                 variable: this.data.variable,
+                model: this.data.model,
             }
         },
         computed: {
@@ -67,6 +75,18 @@
                         this.variable.setInterfaceTypeByString(value);
                     }
                 }
+            },
+            unitsName: {
+                get() {
+                    const u = this.variable.units();
+                    if (u) {
+                        return u.name();
+                    }
+                    return '';
+                },
+                set(value) {
+                    this.variable.setUnitsByName(value);
+                },
             },
             getInterfaceTypes() {
                 let types = [];

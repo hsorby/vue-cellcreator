@@ -14,3 +14,7 @@
 [tooltip]:hover::before, [tooltip]:hover::after {
     z-index: 3;
 }
+
+.advanced-tooltip-able:hover .advanced-tooltip-content {
+    z-index: 5;
+}

@@ -3,8 +3,8 @@
          :class="{'accepts-drop': acceptsDrop}"
          :modified="changed"
          draggable="true"
-         @dragstart="dragModel(index, $event)"
-         @dragend="dragModelEnd"
+         @dragstart="doDragStart(index, $event)"
+         @dragend="doDragEnd"
          @dragenter="doDragEnter"
          @drop="doDrop"
          @dragover="doDragOver"
@@ -222,7 +222,7 @@
             doDragLeave(event) {
                 this._standardDragHandler(event);
             },
-            dragModel(index, event) {
+            doDragStart(index, event) {
                 event.dataTransfer.effectAllowed = 'copyMove';
                 event.dataTransfer.setData('int/model-index', index);
                 event.dataTransfer.setData('text/plain', 'model');
@@ -230,7 +230,7 @@
                 this.$store.commit('ui/updateDraggingEntity', true);
                 this.$store.commit('ui/setMovingEntity', true);
             },
-            dragModelEnd() {
+            doDragEnd() {
                 this.$store.commit('ui/updateDraggingEntity', false);
                 this.$store.commit('ui/setMovingEntity', false);
             },

@@ -93,6 +93,8 @@
     font-size: 12px;
     font-family: sans-serif;
     white-space: nowrap;
+    animation: fade-out 3s;
+    animation-fill-mode: forwards;
 }
 
 [tooltip]:hover::after {
@@ -104,4 +106,19 @@
     color: #fff;
     border: 8px solid transparent;
     border-bottom: 8px solid #000;
+    animation: fade-out 3s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fade-out {
+    0% {
+        opacity: 1;
+    }
+    /* Adding a step in the middle */
+    80% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
 }

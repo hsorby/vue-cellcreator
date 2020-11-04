@@ -3,8 +3,8 @@
         :class="{'accepts-drop': canAcceptDrop}"
         @click="onClick"
         draggable="true"
-        @dragstart="dragStart(index, $event)"
-        @dragend="dragEnd"
+        @dragstart="doDragStart(index, $event)"
+        @dragend="doDragEnd"
         @dragenter="allowDrop"
         @drop="doDrop"
         @dragover="allowDrop"
@@ -24,6 +24,14 @@
                                 :modelIndex="modelIndex"/>
             </div>
         </div>
+        <div class="reset-children">
+            <div class="reset-container"
+                 v-for="(reset, resetIndex) in getResets(modelIndex, [...indexPath, index])"
+                 :key="'reset_' + resetIndex">
+                <cellmlreset :reset="reset" :index="resetIndex" :componentPath="[...indexPath, index]"
+                                :modelIndex="modelIndex"/>
+            </div>
+        </div>
         <div class="component-children">
             <ul class="component-container"
                 v-for="(component, componentIndex) in getComponents(modelIndex, [...indexPath, index])"
@@ -39,6 +47,7 @@
     import {mapGetters} from "vuex";
     import ClickToEdit from "@/components/utilities/ClickToEdit";
     import Variable from "@/components/cellml/Variable";
+    import Reset from "@/components/cellml/Reset";
 
     function isChildComponent(sourceModel, sourcePath, targetModel, targetPath) {
         // Is the target component a child of the source component?
@@ -76,6 +85,7 @@
         components: {
             clicktoedit: ClickToEdit,
             cellmlvariable: Variable,
+            cellmlreset: Reset,
         },
         data: function () {
             return {
@@ -88,6 +98,7 @@
                 entityStyle: 'ui/cellMLEntityStyle',
                 getComponents: 'models/getComponents',
                 getVariables: 'models/getVariables',
+                getResets: 'models/getResets',
             }),
             name: {
                 get() {
@@ -104,14 +115,14 @@
                 return this.component.math.length === 0;
             },
             backgroundImage() {
-                return require('@/assets/sigma.svg');
+                return require('@/assets/greek-sigma.svg');
             },
             acceptsDrop() {
                 return this.canAcceptDrop;
             }
         },
         methods: {
-            dragStart(index, event) {
+            doDragStart(index, event) {
                 event.stopPropagation();
                 event.dataTransfer.effectAllowed = 'copyMove';
                 event.dataTransfer.setData('int/component-index-path', JSON.stringify([...this.indexPath, index]));
@@ -121,7 +132,7 @@
                 this.$store.commit('ui/updateDraggingEntity', true);
                 this.$store.commit('ui/setMovingEntity', true);
             },
-            dragEnd() {
+            doDragEnd() {
                 this.$store.commit('ui/updateDraggingEntity', false);
                 this.$store.commit('ui/setMovingEntity', false);
             },
@@ -197,11 +208,49 @@
                     this.$store.commit('models/addNewVariable', {targetModel: this.modelIndex, targetPath: indexPath});
                 }
             },
+            _dropReset(event) {
+                const index = event.dataTransfer.getData('int/reset-index');
+                // const variableIndex = event.
+                if (event.dataTransfer.effectAllowed === 'copy' && index !== '') {
+                    // Copying existing
+                    const sourceIndex = parseInt(event.dataTransfer.getData('int/model-index'));
+                    const sourceIndexPath = JSON.parse(event.dataTransfer.getData('int/component-index-path'));
+                    const targetIndexPath = [...this.indexPath, parseInt(this.index)];
+                    const payload = {
+                        sourceModel: sourceIndex, sourcePath: sourceIndexPath,
+                        targetModel: this.modelIndex, targetPath: targetIndexPath,
+                        index: parseInt(index),
+                    };
+                    this.$store.commit('models/addClonedReset', payload);
+                } else if (index !== '') {
+                    // Moving existing
+                    const sourceIndex = parseInt(event.dataTransfer.getData('int/model-index'));
+                    const sourceIndexPathStr = event.dataTransfer.getData('int/component-index-path');
+                    const targetIndexPath = [...this.indexPath, parseInt(this.index)];
+                    const sourceIndexPath = JSON.parse(sourceIndexPathStr);
+                    const targetIndexPathStr = JSON.stringify([...targetIndexPath, sourceIndexPath[sourceIndexPath.length - 1]]);
+                    if (!(sourceIndex === this.modelIndex && sourceIndexPathStr === targetIndexPathStr)) {
+                        const payload = {
+                            sourceModel: sourceIndex,
+                            sourcePath: sourceIndexPath,
+                            targetModel: this.modelIndex,
+                            targetPath: targetIndexPath,
+                            index: parseInt(index),
+                        };
+                        this.$store.commit('models/moveReset', payload);
+                    }
+                } else if (index === '') {
+                    // Adding new
+                    const indexPath = [...this.indexPath, this.index];
+                    this.$store.commit('models/addNewReset', {targetModel: this.modelIndex, targetPath: indexPath});
+                }
+            },
             doDrop(event) {
                 this.canAcceptDrop = false;
                 let isComponent = event.dataTransfer.types.includes('component');
                 let isVariable = event.dataTransfer.types.includes('variable');
-                if (isComponent || isVariable) {
+                let isReset = event.dataTransfer.types.includes('reset');
+                if (isComponent || isVariable || isReset) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
@@ -209,12 +258,15 @@
                     this._dropComponent(event);
                 } else if (isVariable) {
                     this._dropVariable(event);
+                } else if (isReset) {
+                    this._dropReset(event);
                 }
             },
             _standardDragHandler(event) {
                 let isComponent = event.dataTransfer.types.includes('component');
                 let isVariable = event.dataTransfer.types.includes('variable');
-                if (isComponent || isVariable) {
+                let isReset = event.dataTransfer.types.includes('reset');
+                if (isComponent || isVariable || isReset) {
                     event.preventDefault();
                     event.stopPropagation();
                     if (event.type === 'dragenter' || event.type === 'dragover') {
@@ -255,7 +307,7 @@
         display: block;
     }
 
-    .variable-children, .variable-container {
+    .variable-children, .variable-container, .reset-children, .reset-container {
         display: flex;
     }
 

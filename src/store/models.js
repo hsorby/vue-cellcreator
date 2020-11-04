@@ -108,6 +108,29 @@ const mutations = {
         let v = targetComponentEntity.takeVariableByIndex(payload.index);
         v.delete();
     },
+    addNewReset(state, payload) {
+        updateModelStatus(state, payload.targetModel);
+        state.changed = !state.changed;
+        let componentEntity = getComponentEntity(state.data[payload.targetModel], payload.targetPath);
+        componentEntity.addReset(new this._vm.$libcellml.Reset());
+    },
+    addClonedReset(state, payload) {
+        let {sourceComponentEntity, targetComponentEntity} = prepareForStateUpdate(state, payload, {source: false, target: true});
+        const r = sourceComponentEntity.resetByIndex(payload.index);
+        targetComponentEntity.addReset(r.clone());
+    },
+    moveReset(state, payload) {
+        let {sourceComponentEntity, targetComponentEntity} = prepareForStateUpdate(state, payload, {source: true, target: true});
+        const r = sourceComponentEntity.takeResetByIndex(payload.index);
+        targetComponentEntity.addReset(r);
+    },
+    removeReset(state, payload) {
+        updateModelStatus(state, payload.sourceModel);
+        state.changed = !state.changed;
+        let targetComponentEntity = getComponentEntity(state.data[payload.sourceModel], payload.sourcePath);
+        let v = targetComponentEntity.takeResetByIndex(payload.index);
+        v.delete();
+    },
     modelChanged(state, index) {
         updateModelStatus(state, index);
         state.changed = !state.changed;
@@ -163,6 +186,15 @@ const getters = {
             variables.push(componentEntity.variableByIndex(variableIndex));
         }
         return variables;
+    },
+    getResets: (state) => (index, indexPath) => {
+        let resets = [];
+        let componentEntity = getComponentEntity(state.data[index], indexPath);
+        const resetCount = componentEntity.resetCount();
+        for (let resetIndex = 0; resetIndex < resetCount; resetIndex++) {
+            resets.push(componentEntity.resetByIndex(resetIndex));
+        }
+        return resets;
     },
     changed: (state) => {
         return state.changed;

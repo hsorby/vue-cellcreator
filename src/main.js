@@ -5,6 +5,7 @@ import App from './App.vue'
 // import {uiData, data, uiState, jsModules} from '@/js/model';
 import "@/assets/common.css"
 import "@/assets/zindex.css"
+import "@/assets/infotip.css"
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons'

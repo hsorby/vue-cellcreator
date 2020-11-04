@@ -6,7 +6,7 @@
              :key="index"
              :style="{backgroundColor: item.backgroundColor}"
              draggable="true"
-             @dragstart='startDrag($event, item)'>
+             @dragstart='doDragStart(item, $event)'>
             <span>{{ item.title }}</span>
         </div>
     </div>
@@ -24,11 +24,11 @@
             })
         },
         methods: {
-            startDrag(evt, item) {
-                evt.dataTransfer.effectAllowed = 'copy';
-                evt.dataTransfer.setData('object', item);
-                evt.dataTransfer.setData("text/plain", item.name);
-                evt.dataTransfer.setData(item.name, null);
+            doDragStart(item, event) {
+                event.dataTransfer.effectAllowed = 'copy';
+                event.dataTransfer.setData('object', item);
+                event.dataTransfer.setData("text/plain", item.name);
+                event.dataTransfer.setData(item.name, null);
                 this.$store.commit('ui/updateDraggingEntity', true);
             },
         }

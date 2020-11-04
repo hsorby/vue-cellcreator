@@ -3,10 +3,10 @@
         <table class="unit-table">
             <tr class="cellml-unit" v-for="(unit, index) in unitEntries" :key="index">
                 <th scope="row">unit:</th>
-                <td><click-to-edit v-model="unit.reference" :value="unit.reference" default-value="reference"/></td>
-                <td><click-to-edit v-model="unit.prefix" :value="unit.prefix" :fit-content="true" default-value="1"/></td>
-                <td><click-to-edit v-model="unit.exponent" :value="unit.exponent" :fit-content="true" default-value="1.0"/></td>
-                <td><click-to-edit v-model="unit.multiplier" :value="unit.multiplier" :fit-content="true" default-value="1.0"/></td>
+                <td><click-to-edit v-model="unit.reference" default-value="reference"/></td>
+                <td><click-to-edit v-model="unit.prefix" :fit-content="true" default-value="1"/></td>
+                <td><click-to-edit v-model="unit.exponent" :fit-content="true" default-value="1.0"/></td>
+                <td><click-to-edit v-model="unit.multiplier" :fit-content="true" default-value="1.0"/></td>
                 <td><button @click="onRemove(index)"><font-awesome-icon class="remove-colour" icon="minus"/></button></td>
             </tr>
             <tr class="border-me">

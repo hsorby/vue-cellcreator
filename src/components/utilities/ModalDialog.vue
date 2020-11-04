@@ -1,6 +1,7 @@
 <template>
     <transition name="modal">
-        <div class="modal-mask modal-dialog-z-index justify-center align-center display-flex">
+        <div class="modal-mask modal-dialog-z-index justify-center align-center display-flex"
+            draggable="true" @dragstart="doDragStart">
             <div class="modal-wrapper">
                 <div class="modal-container" @keydown.esc="$emit('close')" @click="onClick">
                     <div class="modal-close-button" v-if="showCloseButton">
@@ -33,8 +34,11 @@
         },
         methods: {
             onClick(event) {
-                console.log("on modal click.");
                 event.stopPropagation();
+            },
+            doDragStart(event) {
+                event.stopPropagation();
+                event.preventDefault();
             }
         }
     }
@@ -57,7 +61,7 @@
 
     .modal-container {
         /*width: 37%;*/
-        margin: 0px auto;
+        margin: 0 auto;
         padding: 20px 30px;
         background-color: #fff;
         border-radius: 2px;

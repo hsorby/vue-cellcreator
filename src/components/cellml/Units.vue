@@ -1,14 +1,19 @@
 <template>
-    <div class="cellml-units clickable" :style="entityStyle('units')"
-         :tooltip="name"
+    <div class="cellml-units clickable advanced-tooltip-able"
+         :style="entityStyle('units')"
          draggable="true"
-         @dragstart="dragStart(index, $event)"
-         @dragend="dragEnd"
+         @dragstart="doDragStart(index, $event)"
+         @dragend="doDragEnd"
          @click="onClick">
-         <modaldialog v-if="showModal" @close="onClose">
-             <component :is="activePanel" :data="panelData"/>
-         </modaldialog>
-         <span v-show="hasContent"><font-awesome-icon class="content-colour" icon="plus"/></span>
+        <span v-show="hasContent"><font-awesome-icon class="content-colour" icon="plus"/></span>
+        <infotip v-if="showAdvancedTooltip">
+            <div>
+                <span>Name: {{ name }}</span>
+            </div>
+        </infotip>
+        <modaldialog v-if="showModal" @close="onClose">
+            <component :is="activePanel" :data="panelData"/>
+        </modaldialog>
     </div>
 </template>
 
@@ -16,17 +21,22 @@
     import {mapGetters} from "vuex";
     import UnitsPanel from "@/components/panels/UnitsPanel";
     import ModalDialog from "@/components/utilities/ModalDialog";
+    import AdvancedTooltip from "@/components/utilities/AdvancedTooltip";
+    import {advancedTooltipModalEntity} from "@/components/mixins/AdvancedTooltipModalEntity";
 
     export default {
         name: 'CellMLUnits',
         props: ['units', 'index', 'modelIndex'],
+        mixins: [advancedTooltipModalEntity],
         components: {
             modaldialog: ModalDialog,
+            infotip: AdvancedTooltip,
         },
-        data: function() {
+        data: function () {
             return {
-                showModal: false,
-                panelData: {},
+                panelData: {
+                    units: this.units,
+                },
                 activePanel: UnitsPanel,
                 contentSignal: '',
             };
@@ -43,7 +53,8 @@
             },
         },
         methods: {
-            dragStart(index, event) {
+            doDragStart(index, event) {
+                this.showAdvancedTooltip = false;
                 event.stopPropagation();
                 event.dataTransfer.effectAllowed = 'copyMove';
                 event.dataTransfer.setData('int/units-index', index);
@@ -52,20 +63,6 @@
                 event.dataTransfer.setData('units', null);
                 this.$store.commit('ui/updateDraggingEntity', true);
                 this.$store.commit('ui/setMovingEntity', true);
-            },
-            dragEnd() {
-                this.$store.commit('ui/updateDraggingEntity', false);
-                this.$store.commit('ui/setMovingEntity', false);
-            },
-            onClick() {
-                this.panelData = {
-                    units: this.units,
-                };
-                this.showModal = true;
-            },
-            onClose() {
-                this.showModal = false;
-                this.$store.commit('models/modelChanged', this.modelIndex);
             },
         }
     }
