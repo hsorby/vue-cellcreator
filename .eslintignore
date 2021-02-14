@@ -1,1 +1,6 @@
+# If the web assembly for libcellml was made into its own package
+# then I wouldn't need this here.
 src/js/libcellml.js
+# Adding this for local development, hopefully remember to remove
+# it at a later date.
+libcellml.js
